@@ -16,6 +16,9 @@ pkg_check_modules(pangocairo IMPORTED_TARGET pangocairo)
 pkg_check_modules(gtest IMPORTED_TARGET gtest)
 pkg_check_modules(gtest_main IMPORTED_TARGET gtest_main)
 
+pkg_check_modules(FOR_EVERY_TARGETS IMPORTED_TARGET fmt)
+link_libraries(PkgConfig::FOR_EVERY_TARGETS) # All targets
+
 add_executable(pango_basic graphics/font/pango_basic.cpp)
 target_link_libraries(pango_basic PkgConfig::pangocairo)
 
@@ -39,3 +42,10 @@ add_executable(sexpr_test sexpr/sexpr_rec_tests.cpp)
 target_link_libraries(sexpr_test sexpr_rec PkgConfig::gtest_main)
 
 include(ffi/minidraw/minidraw.cmake)
+
+
+# IPC methods
+
+add_executable(randomSender ipc/pipe/echoRandoms/randomSender.cpp)
+set_target_properties(randomSender PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/ipc/pipe/echoRandoms/)
