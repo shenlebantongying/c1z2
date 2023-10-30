@@ -1,7 +1,7 @@
 #!/usr/bin/env racket
 #lang racket
 
-(require "minidraw.rkt")
+(require "minidraw_racket.rkt")
 
 (define width 500)
 (define height 500)

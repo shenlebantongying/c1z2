@@ -20,8 +20,9 @@ struct drawBoard {
 };
 
 extern "C" {
+const char* version(); // for test;
 void initDrawBoard(int x, int y);
-void setColor(int x, int y, int z);
+void setColor(int x, int y, int z); //  0~255
 void lineTo(int x, int y);
 void moveTo(int x, int y);
 void stroke(void);

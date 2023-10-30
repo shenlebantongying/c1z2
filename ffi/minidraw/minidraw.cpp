@@ -34,6 +34,11 @@ void moveTo(int x, int y)
 void stroke()
 {
     a->stroke();
+}
+
+const char* version()
+{
+    return "0.0.1";
 };
 
 bool drawBoard::init(int64_t width, int64_t height)
