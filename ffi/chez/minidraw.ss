@@ -1,4 +1,4 @@
-(library (minidraw_chez)
+(library (minidraw)
   (export 
    version
    initDrawBoard
@@ -8,20 +8,11 @@
    stroke
    savePng
    )
-  (import (chezscheme))
+  (import (chezscheme) (ffi))
   
   ;; TODO: exactly where the library will be loaded?? Boundary between different libs??
   (define this_name_does_not_matter
-    (load-shared-object (case (machine-type)
-			  [(a6le ta6le) "./libminidraw.so"]
-			  [(arm64osx tarm64osx) "./libminidraw.dylib"]
-			  [else (display-string "PUT MORE MACHINETYPE")])))
-  
-  (define-syntax def-cfun
-    (syntax-rules ()
-      ((_  name args -> ret)
-       (define name
-         (foreign-procedure (symbol->string 'name) args ret)))))
+    (load-dynamic-lib "../minidraw/libminidraw"))
 
   (def-cfun version () -> string)
   (def-cfun initDrawBoard (int int) -> void)

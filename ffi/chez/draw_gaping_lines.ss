@@ -1,5 +1,5 @@
 (import
- (minidraw_chez)
+ (minidraw)
  (scheme))
 
 (define width 500)

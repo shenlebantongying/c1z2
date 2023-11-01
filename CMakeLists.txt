@@ -41,8 +41,10 @@ add_library(sexpr_rec STATIC sexpr/sexpr_rec.cpp)
 add_executable(sexpr_test sexpr/sexpr_rec_tests.cpp)
 target_link_libraries(sexpr_test sexpr_rec PkgConfig::gtest_main)
 
-include(ffi/minidraw/minidraw.cmake)
+# ffi
 
+include(ffi/minidraw/minidraw.cmake)
+include(ffi/ftype/ftype.cmake)
 
 # IPC methods
 
