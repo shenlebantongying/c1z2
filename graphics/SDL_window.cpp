@@ -39,6 +39,11 @@ bool SDL_window::init()
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
+    // Ensure window shown before event polling
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderPresent(renderer);
+
     recreateSurfaces();
 
     return additionalInit();
