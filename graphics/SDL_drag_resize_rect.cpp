@@ -60,7 +60,7 @@ struct demo_key_ev : SDL_window {
 
     void onEvent(SDL_Event& ev) override
     {
-        if (ev.type == SDL_KEYDOWN) {
+        if (ev.type == SDL_EVENT_KEY_DOWN) {
             switch (ev.key.keysym.scancode) {
             case SDL_SCANCODE_W:
                 myRect.y -= 10;
@@ -81,16 +81,17 @@ struct demo_key_ev : SDL_window {
 
             requestRedraw();
 
-        } else if (ev.type == SDL_MOUSEBUTTONUP) {
+        } else if (ev.type == SDL_EVENT_MOUSE_BUTTON_UP) {
             isDragging = false;
             isResizing = false;
             requestRedraw();
 
-        } else if (ev.type == SDL_MOUSEBUTTONDOWN) {
+        } else if (ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
             SDL_MouseMotionEvent e = ev.motion;
-            auto p = SDL_Point(e.x, e.y);
+            fmt::println("{} {}",e.x,e.y);
+            SDL_Point p = SDL_Point{(int)e.x, (int)e.y};
             if (SDL_PointInRect(&p, &innerRect)) {
-                dragOffSet = SDL_Point(e.x - myRect.x, e.y - myRect.y);
+                dragOffSet = SDL_Point{int(e.x - myRect.x), int(e.y - myRect.y)};
                 isDragging = true;
             }
             if (onBorderQ(p, myRect, innerRect)) {
@@ -100,9 +101,9 @@ struct demo_key_ev : SDL_window {
             }
             requestRedraw();
 
-        } else if (ev.type == SDL_MOUSEMOTION) {
+        } else if (ev.type == SDL_EVENT_MOUSE_MOTION) {
             SDL_MouseMotionEvent e = ev.motion;
-            auto p = SDL_Point(e.x, e.y);
+            auto p = SDL_Point{int(e.x), int(e.y)};
 
             if (isDragging) {
                 setMainRect({ p.x - dragOffSet.x, p.y - dragOffSet.y, myRect.w, myRect.h });

@@ -8,10 +8,11 @@ set(CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+add_subdirectory(SDL EXCLUDE_FROM_ALL)
+
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(cairo IMPORTED_TARGET cairo)
-pkg_check_modules(sdl2 IMPORTED_TARGET sdl2)
 pkg_check_modules(pangocairo IMPORTED_TARGET pangocairo)
 pkg_check_modules(gtest IMPORTED_TARGET gtest)
 pkg_check_modules(gtest_main IMPORTED_TARGET gtest_main)

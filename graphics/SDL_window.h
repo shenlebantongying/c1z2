@@ -26,17 +26,9 @@ public:
     int width;
     int height;
 
-    static int scalingFactor()
-    {
-        return
-#if defined(__APPLE__)
-            2;
-#elif defined(__LINUX__)
-            1;
-#endif
-    }
-
 private:
+    float scalingFactor;
+
     bool init();
     void blit() const;
 

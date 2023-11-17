@@ -1,10 +1,10 @@
 #include "SDL_window.h"
 #include <SDL.h>
 #include <cairo.h>
+#include <math.h>
 
 class sinWave : public SDL_window {
 
-private:
     int delta = 0;
 
 public:
@@ -23,7 +23,7 @@ public:
 
         for (int i = 0; i <= width; i++) {
             double x = i;
-            double y = height / 2.0 - sin(x / (M_PI * 10) + delta) * width / scalingFactor() / 2;
+            double y = height / 2.0 - sin(x / (M_PI * 10) + delta) * height / 4;
             if (i == 0) {
                 cairo_move_to(cr, x, y);
             } else {
@@ -36,7 +36,7 @@ public:
 
     void updateStates() override
     {
-        if (SDL_TICKS_PASSED(SDL_GetTicks(), lastUpdateTime + 100)) {
+        if (SDL_GetTicks() >= lastUpdateTime + 100) {
             delta += 1;
             lastUpdateTime = SDL_GetTicks();
             requestRedraw();

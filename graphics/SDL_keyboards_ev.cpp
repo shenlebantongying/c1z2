@@ -56,7 +56,7 @@ struct demo_key_ev : public SDL_window {
     void onEvent(SDL_Event& ev) override
     {
 
-        if (ev.type == SDL_KEYDOWN) {
+        if (ev.type == SDL_EVENT_KEY_DOWN) {
             switch (ev.key.keysym.scancode) {
             case SDL_SCANCODE_W:
                 text = "w pressed\n";
@@ -69,10 +69,10 @@ struct demo_key_ev : public SDL_window {
                 auto mod = SDL_GetModState();
 
                 switch (mod) {
-                case KMOD_LCTRL:
+                case SDL_KMOD_LCTRL:
                     text.append("LCtrl + ");
                     break;
-                case KMOD_LSHIFT:
+                case SDL_KMOD_LSHIFT:
                     text.append("LShift + ");
                     break;
                 default:
