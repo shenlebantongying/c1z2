@@ -19,11 +19,7 @@ pkg_check_modules(gtest_main IMPORTED_TARGET gtest_main)
 pkg_check_modules(FOR_EVERY_TARGETS IMPORTED_TARGET fmt)
 link_libraries(PkgConfig::FOR_EVERY_TARGETS) # All targets
 
-add_executable(pango_basic graphics/font/pango_basic.cpp)
-target_link_libraries(pango_basic PkgConfig::pangocairo)
-
-add_executable(pango_text_wrapping graphics/font/pango_text_wrapping.cpp)
-target_link_libraries(pango_text_wrapping PkgConfig::pangocairo)
+include(graphics/font/pango.cmake)
 
 add_executable(sdl_sinWave graphics/SDL_sinWave.cpp graphics/SDL_window.cpp)
 target_link_libraries(sdl_sinWave PkgConfig::sdl2 PkgConfig::cairo)
