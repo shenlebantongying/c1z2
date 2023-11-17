@@ -21,14 +21,7 @@ link_libraries(PkgConfig::FOR_EVERY_TARGETS) # All targets
 
 include(graphics/font/pango.cmake)
 
-add_executable(sdl_sinWave graphics/SDL_sinWave.cpp graphics/SDL_window.cpp)
-target_link_libraries(sdl_sinWave PkgConfig::sdl2 PkgConfig::cairo)
-
-add_executable(sdl_drawText graphics/SDL_drawText.cpp graphics/SDL_window.cpp)
-target_link_libraries(sdl_drawText PkgConfig::sdl2 PkgConfig::pangocairo)
-
-add_executable(sdl_keyboard_ev graphics/SDL_window.cpp graphics/SDL_keyboards_ev.cpp)
-target_link_libraries(sdl_keyboard_ev PkgConfig::sdl2 PkgConfig::pangocairo)
+include(graphics/SDL.cmake)
 
 # Sexpr
 
