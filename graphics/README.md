@@ -9,3 +9,9 @@
 
 We set `cairo_surface_set_device_scale` to `SDL pixel density`, 
 so that we draw on coordinates of `window size` without considering the underlying buffer
+
+# Drawing buffer
+
+`SDL_Surface` and `cairo_surface_t` shares the same data buffer.
+
+Note that cairo surface's RGB values are pre-multiplied by alpha.

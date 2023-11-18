@@ -13,6 +13,8 @@ SDL_window::~SDL_window()
 SDL_window::SDL_window(int init_width, int init_height)
     : width(init_width)
     , height(init_height)
+    , cr_surface(nullptr)
+    , sdl_surface(nullptr)
 {
 }
 
@@ -51,8 +53,12 @@ bool SDL_window::init()
 
 bool SDL_window::recreateSurfaces()
 {
-    sdl_surface = SDL_CreateSurface(width * scalingFactor, height * scalingFactor, SDL_GetPixelFormatEnumForMasks(32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0));
+    SDL_DestroySurface(sdl_surface);
+    if (cr_surface) {
+        cairo_surface_destroy(cr_surface);
+    }
 
+    sdl_surface = SDL_CreateSurface(width * scalingFactor, height * scalingFactor, SDL_GetPixelFormatEnumForMasks(32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0));
     cr_surface = cairo_image_surface_create_for_data(static_cast<unsigned char*>(sdl_surface->pixels), CAIRO_FORMAT_RGB24,
         sdl_surface->w, sdl_surface->h, sdl_surface->pitch);
 
@@ -70,6 +76,9 @@ int SDL_window::run()
     if (!init()) {
         printf("Failed to init\n");
     }
+
+    draw();
+    blit();
 
     bool done = false;
     while (!done) {
@@ -103,6 +112,7 @@ int SDL_window::run()
 
 void SDL_window::blit() const
 {
+    cairo_surface_flush(cr_surface);
     SDL_UpdateTexture(sdl_texture, nullptr, sdl_surface->pixels, int(sdl_surface->pitch));
 
     auto target = SDL_FRect { 0, 0, float(width * scalingFactor), float(height * scalingFactor) };

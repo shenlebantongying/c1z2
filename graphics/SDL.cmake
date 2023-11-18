@@ -4,6 +4,9 @@ target_link_libraries(sdl_base PkgConfig::cairo SDL3::SDL3)
 add_executable(sdl_sinWave ${CMAKE_CURRENT_LIST_DIR}/SDL_sinWave.cpp)
 target_link_libraries(sdl_sinWave  PkgConfig::cairo SDL3::SDL3 sdl_base)
 
+add_executable(sdl_scrolling ${CMAKE_CURRENT_LIST_DIR}/SDL_scrolling.cpp)
+target_link_libraries(sdl_scrolling  PkgConfig::cairo SDL3::SDL3 sdl_base)
+
 add_executable(sdl_drawText ${CMAKE_CURRENT_LIST_DIR}/SDL_drawText.cpp)
 target_link_libraries(sdl_drawText PkgConfig::pangocairo SDL3::SDL3 sdl_base)
 
