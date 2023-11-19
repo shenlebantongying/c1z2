@@ -22,6 +22,7 @@ Checks: >
   -cppcoreguidelines-no-malloc,
   -cppcoreguidelines-non-private-member-variables-in-classes,
   -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-prefer-member-initializer,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-type-cstyle-cast,
   -cppcoreguidelines-pro-type-member-init,
@@ -42,3 +43,4 @@ Checks: >
   -readability-implicit-bool-conversion,
   -readability-isolate-declaration,
   -readability-magic-numbers,
+  -readability-make-member-function-const,

@@ -40,4 +40,37 @@ include(ffi/ftype/ftype.cmake)
 
 add_executable(randomSender ipc/pipe/echoRandoms/randomSender.cpp)
 set_target_properties(randomSender PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/ipc/pipe/echoRandoms/)
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/ipc/pipe/echoRandoms/)
+
+# GUI library
+
+add_library(ui SHARED
+        ui/Z.h
+        ui/Z_app.h
+        ui/Z_app.cpp
+        ui/Z_widget.cpp
+        ui/Z_widget.h
+        ui/Z_button.cpp
+        ui/Z_button.cpp
+        ui/Z_button.h)
+target_link_libraries(ui SDL3::SDL3 PkgConfig::cairo)
+
+add_executable(ui_sample ui/tests/sample.cpp)
+target_link_libraries(ui_sample PRIVATE ui)
+target_include_directories(ui_sample PUBLIC ui)
+
+# Doxygen
+find_package(Doxygen
+        REQUIRED dot
+        OPTIONAL_COMPONENTS mscgen)
+
+if (NOT DOXYGEN_FOUND)
+    message(WARNING "Doxygen not found - Documentation will not be generated!")
+else ()
+    # output -> build/html
+    set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/doxygen")
+
+    doxygen_add_docs(doxygenDoc
+            ui/
+    )
+endif ()
