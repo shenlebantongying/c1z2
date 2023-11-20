@@ -58,8 +58,9 @@ bool SDL_window::recreateSurfaces()
         cairo_surface_destroy(cr_surface);
     }
 
-    sdl_surface = SDL_CreateSurface(width * scalingFactor, height * scalingFactor, SDL_GetPixelFormatEnumForMasks(32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0));
-    cr_surface = cairo_image_surface_create_for_data(static_cast<unsigned char*>(sdl_surface->pixels), CAIRO_FORMAT_RGB24,
+    sdl_surface = SDL_CreateSurface(width * scalingFactor, height * scalingFactor,
+        SDL_GetPixelFormatEnumForMasks(32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000));
+    cr_surface = cairo_image_surface_create_for_data(static_cast<unsigned char*>(sdl_surface->pixels), CAIRO_FORMAT_ARGB32,
         sdl_surface->w, sdl_surface->h, sdl_surface->pitch);
 
     cairo_surface_set_device_scale(cr_surface, scalingFactor, scalingFactor);
@@ -90,7 +91,6 @@ int SDL_window::run()
             } else if (event.type == SDL_EVENT_WINDOW_RESIZED) {
                 width = event.window.data1;
                 height = event.window.data2;
-                printf("Resized -> w %d h %d\n", width, height);
                 recreateSurfaces();
                 draw();
                 blit();
