@@ -1,29 +1,36 @@
 #pragma once
 
-#include <vector>
+#include "Z_ns.h"
 #include <SDL.h>
-#include <cairo/cairo.h>
+#include <cairo.h>
+#include <vector>
 
 struct Z_widget {
 
-    cairo_surface_t* surface;
-    cairo_t* cr;
+    Z_widget(Z_widget* parent, int rel_x, int rel_y, int w, int h);
 
     Z_widget* parent;
-    std::vector<Z_widget*>* children;
+    std::vector<Z_widget*> children;
 
-    // position relateive to parent
+    // position relative to parent
     int relative_x;
     int relative_y;
 
     int width;
     int height;
 
-    Z_widget(Z_widget* parent, int rel_x, int rel_y, int w, int h);
+    cairo_surface_t* surface;
+    cairo_t* cr;
 
-    void add_child(Z_widget * o);
+    Z_layout layout = Z_layout::NO;
+
+    void add_child(Z_widget* o);
+    void relayout();
 
     virtual void draw();
+
+    void resize(int w, int h);
+    void repos(int x, int y);
 
     void* pixels();
     int stride();

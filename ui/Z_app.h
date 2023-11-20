@@ -8,21 +8,28 @@ struct Z_app {
 
     int run();
 
-    bool adjustTexture();
 
-    Z_widget * getMainWidget();
+    void resize(int w, int h);
+    /// renew texture
+    void updateTexture();
+
+    Z_widget* getMainWidget();
 
     int width;
     int height;
 
     Z_widget* mainWidget = nullptr;
 
+    void static rec_updateLayout(Z_widget* widget);
+
 private:
     ~Z_app();
 
-    float scalingFactor;
+    void rec_updateTexture(Z_widget* widget, int base_x, int base_y);
+    void blit();
 
-    void blit() const;
+    int width_pixel;
+    int height_pixel;
 
     SDL_Window* window;
     SDL_Renderer* renderer;

@@ -24,7 +24,6 @@ Z_app::Z_app(int init_width, int init_height)
     if (window == nullptr) {
         printf("SDL_CreateWindow failed: %s", SDL_GetError());
     }
-    scalingFactor = SDL_GetWindowDisplayScale(window);
 
     renderer = SDL_CreateRenderer(window, nullptr, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (renderer == nullptr) {
@@ -38,17 +37,15 @@ Z_app::Z_app(int init_width, int init_height)
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
 
-    adjustTexture();
+    updateTexture();
 }
 
-bool Z_app::adjustTexture()
+void Z_app::updateTexture()
 {
     SDL_DestroyTexture(sdl_texture);
     sdl_texture = SDL_CreateTexture(renderer,
         SDL_GetPixelFormatEnumForMasks(32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0),
         SDL_TEXTUREACCESS_STREAMING, width, height);
-
-    return true;
 }
 
 Z_widget* Z_app::getMainWidget()
@@ -65,6 +62,7 @@ int Z_app::run()
         return 1;
     }
 
+    rec_updateLayout(mainWidget);
     blit();
 
     bool done = false;
@@ -75,11 +73,9 @@ int Z_app::run()
             if (event.type == SDL_EVENT_QUIT) {
                 done = true;
             } else if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-                width = event.window.data1;
-                height = event.window.data2;
-                printf("Resized -> w %d h %d\n", width, height);
-                adjustTexture();
-                blit();
+                resize(event.window.data1, event.window.data2);
+                updateTexture();
+                rec_updateLayout(mainWidget);
             } else {
                 // onEvent(event);
             }
@@ -90,19 +86,38 @@ int Z_app::run()
     return 0;
 }
 
-void Z_app::blit() const
+void Z_app::blit()
 {
-    mainWidget->draw();
-    SDL_UpdateTexture(sdl_texture, nullptr, mainWidget->pixels(), mainWidget->stride());
+    mainWidget->resize(width, height);
+    rec_updateTexture(mainWidget, 0, 0);
 
-    // here
-    for (Z_widget* w : *mainWidget->children) {
-        w->draw();
-        SDL_Rect target { w->relative_x, w->relative_y, w->width, w->height };
-        SDL_UpdateTexture(sdl_texture, &target, w->pixels(), w->stride());
-    }
-
-    auto target = SDL_FRect { 0, 0, float(width * scalingFactor), float(height * scalingFactor) };
-    SDL_RenderTexture(renderer, sdl_texture, nullptr, &target);
+    SDL_RenderTexture(renderer, sdl_texture, nullptr, nullptr);
     SDL_RenderPresent(renderer);
+}
+
+void Z_app::rec_updateTexture(Z_widget* widget, int base_x, int base_y)
+{
+    widget->draw();
+    SDL_Rect target { base_x + widget->relative_x, base_y + widget->relative_y, widget->width, widget->height };
+    SDL_UpdateTexture(sdl_texture, &target, widget->pixels(), widget->stride());
+
+    for (auto* c : widget->children) {
+        rec_updateTexture(c, target.x, target.y);
+    }
+}
+
+void Z_app::rec_updateLayout(Z_widget* widget)
+{
+    widget->relayout();
+    for (auto* w : widget->children) {
+        rec_updateLayout(w);
+    }
+}
+
+void Z_app::resize(int w, int h)
+{
+    width = w;
+    height = h;
+    mainWidget->width = w;
+    mainWidget->height = h;
 }

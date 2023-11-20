@@ -52,12 +52,13 @@ add_library(ui SHARED
         ui/Z_widget.h
         ui/Z_button.cpp
         ui/Z_button.cpp
-        ui/Z_button.h)
+        ui/Z_button.h
+        ui/Z_ns.h)
 target_link_libraries(ui SDL3::SDL3 PkgConfig::cairo)
 
-add_executable(ui_sample ui/tests/sample.cpp)
-target_link_libraries(ui_sample PRIVATE ui)
-target_include_directories(ui_sample PUBLIC ui)
+add_executable(ui_test_nest_layout ui/tests/nest_layout.cpp)
+target_link_libraries(ui_test_nest_layout PRIVATE ui)
+target_include_directories(ui_test_nest_layout PUBLIC ui)
 
 # Doxygen
 find_package(Doxygen
