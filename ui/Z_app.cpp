@@ -88,6 +88,7 @@ int Z_app::run()
                 }
             } break;
             default:
+                break;
             }
         }
 
