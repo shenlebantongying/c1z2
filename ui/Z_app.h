@@ -20,7 +20,12 @@ struct Z_app {
 
     Z_widget* mainWidget = nullptr;
 
-    void static rec_updateLayout(Z_widget* widget);
+    static void rec_updateLayout(Z_widget* widget);
+
+    /// get what's under cursor
+    /// Note that a widget only knows relative pos to its parent
+    /// x,y passed here is relative too widget w
+    static Z_widget* hit_testing(Z_widget* w, int x, int y);
 
 private:
     ~Z_app();

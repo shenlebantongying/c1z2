@@ -96,3 +96,12 @@ void Z_widget::relayout()
     } break;
     }
 }
+
+const char* Z_widget::toStr()
+{
+    return "widget";
+}
+void Z_widget::responseToHitEvent()
+{
+    printf("Got hit %p\n", this);
+}

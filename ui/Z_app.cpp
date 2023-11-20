@@ -19,13 +19,14 @@ Z_app::Z_app(int init_width, int init_height)
         exit(1);
     }
 
-    window = SDL_CreateWindow("Drawing board",
-        width, height, SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Drawing board", width, height,
+        SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_RESIZABLE);
     if (window == nullptr) {
         printf("SDL_CreateWindow failed: %s", SDL_GetError());
     }
 
-    renderer = SDL_CreateRenderer(window, nullptr, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(
+        window, nullptr, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (renderer == nullptr) {
         printf("SDL_CreateRenderer failed %s\n", SDL_GetError());
     }
@@ -43,7 +44,8 @@ Z_app::Z_app(int init_width, int init_height)
 void Z_app::updateTexture()
 {
     SDL_DestroyTexture(sdl_texture);
-    sdl_texture = SDL_CreateTexture(renderer,
+    sdl_texture = SDL_CreateTexture(
+        renderer,
         SDL_GetPixelFormatEnumForMasks(32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0),
         SDL_TEXTUREACCESS_STREAMING, width, height);
 }
@@ -67,17 +69,25 @@ int Z_app::run()
 
     bool done = false;
     while (!done) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event) != 0) {
-
-            if (event.type == SDL_EVENT_QUIT) {
+        SDL_Event ev;
+        while (SDL_PollEvent(&ev) != 0) {
+            switch (ev.type) {
+            case SDL_EVENT_QUIT:
                 done = true;
-            } else if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-                resize(event.window.data1, event.window.data2);
+                break;
+            case SDL_EVENT_WINDOW_RESIZED:
+                resize(ev.window.data1, ev.window.data2);
                 updateTexture();
                 rec_updateLayout(mainWidget);
-            } else {
-                // onEvent(event);
+                break;
+            case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+                Z_widget* hitted = hit_testing(mainWidget, ev.button.x, ev.button.y);
+                if (hitted != nullptr) {
+                    printf("Hit -> %s %p\n", hitted->toStr(), hitted);
+                    hitted->responseToHitEvent();
+                }
+            } break;
+            default:
             }
         }
 
@@ -98,7 +108,8 @@ void Z_app::blit()
 void Z_app::rec_updateTexture(Z_widget* widget, int base_x, int base_y)
 {
     widget->draw();
-    SDL_Rect target { base_x + widget->relative_x, base_y + widget->relative_y, widget->width, widget->height };
+    SDL_Rect target { base_x + widget->relative_x, base_y + widget->relative_y,
+        widget->width, widget->height };
     SDL_UpdateTexture(sdl_texture, &target, widget->pixels(), widget->stride());
 
     for (auto* c : widget->children) {
@@ -120,4 +131,26 @@ void Z_app::resize(int w, int h)
     height = h;
     mainWidget->width = w;
     mainWidget->height = h;
+}
+
+Z_widget* Z_app::hit_testing(Z_widget* w, int x, int y)
+{
+    if (x > w->width || y > w->height) {
+        return nullptr;
+    }
+
+    if (w->children.empty()) {
+        return w;
+    }
+
+    auto c = SDL_Point { x, y };
+
+    for (auto* o : w->children) {
+        auto t = SDL_Rect { o->relative_x, o->relative_y, o->width, o->height };
+        if (SDL_PointInRect(&c, &t)) {
+            return hit_testing(o, x - o->relative_x, y - o->relative_y);
+        }
+    }
+
+    return nullptr;
 }

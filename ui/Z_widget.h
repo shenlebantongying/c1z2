@@ -3,6 +3,7 @@
 #include "Z_ns.h"
 #include <SDL.h>
 #include <cairo.h>
+#include <string_view>
 #include <vector>
 
 struct Z_widget {
@@ -35,5 +36,8 @@ struct Z_widget {
     void* pixels();
     int stride();
 
-    ~Z_widget();
+    virtual const char* toStr();
+
+    virtual void responseToHitEvent();
+    virtual ~Z_widget();
 };
