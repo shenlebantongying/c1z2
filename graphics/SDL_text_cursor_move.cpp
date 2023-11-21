@@ -93,7 +93,7 @@ public:
             default:
                 break;
             }
-            printf("textPos -> %d\n", textPos);
+            printf("textBytePos -> %d\n", textPos);
             requestRedraw();
         }
 
@@ -107,12 +107,9 @@ public:
         }
 
         if (ev.type == SDL_EVENT_MOUSE_WHEEL) {
-            if (ev.wheel.y > 0) {
-                if (verticalOffset < 15) {
-                    verticalOffset += 15;
-                }
-            } else {
-                verticalOffset -= 15;
+            verticalOffset += ev.wheel.y * 3;
+            if (verticalOffset > 10) {
+                verticalOffset = 10;
             }
             requestRedraw();
         }
