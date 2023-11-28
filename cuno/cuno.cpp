@@ -49,6 +49,8 @@ struct cuno {
   SDL_Texture *sdl_texture{nullptr};
   cairo_surface_t *cr_surface{nullptr};
 
+  SDL_Rect IME_pos{0, 0, 2, line_height_for_now()};
+
   int vertical_offset = 0;
 
   int width;
@@ -63,7 +65,7 @@ struct cuno {
 
   cursor_pos_t cursor{0, 0};
 
-  PangoRectangle strongPos{};
+  PangoRectangle cursor_rect{};
 
   cuno(int init_width, int init_height) {
     width = init_width;
@@ -129,11 +131,8 @@ struct cuno {
       cairo_restore(cr);
     }
 
-    pango_layout_get_cursor_pos(lines[cursor.line_n]->layout, cursor.byte_n,
-                                &strongPos, nullptr);
-
-    auto x = pango_units_to_double(strongPos.x);
-    auto h = pango_units_to_double(strongPos.height);
+    auto x = pango_units_to_double(cursor_rect.x);
+    auto h = pango_units_to_double(cursor_rect.height);
 
     cairo_set_source_rgba(cr, 1, 0, 0, 0.8);
     cairo_rectangle(cr, x - 1, line_height_for_now() * cursor.line_n - 3, 2,
@@ -218,6 +217,18 @@ struct cuno {
     SDL_RenderPresent(renderer);
   };
 
+  void update_cursor_pos() {
+    // update cursor pos;
+    pango_layout_get_cursor_pos(lines[cursor.line_n]->layout, cursor.byte_n,
+                                &cursor_rect, nullptr);
+
+    // change IME position
+    IME_pos = {int(pango_units_to_double(cursor_rect.x)),
+               line_height_for_now() * cursor.line_n, 2, line_height_for_now()};
+
+    SDL_SetTextInputRect(&IME_pos);
+  }
+
   void onEvent(SDL_Event &ev) {
 
     switch (ev.type) {
@@ -254,6 +265,7 @@ struct cuno {
             strlen(pango_layout_get_text(lines[cursor.line_n]->layout));
       }
 
+      update_cursor_pos();
       request_redraw();
     } break;
     case SDL_EVENT_TEXT_EDITING: {
@@ -273,6 +285,8 @@ struct cuno {
                               (int)t.length());
 
         cursor.byte_n = lpos;
+
+        update_cursor_pos();
 
         request_redraw();
       } else if (ev.key.keysym.sym == SDLK_RETURN) {
@@ -304,6 +318,8 @@ struct cuno {
                             current_line_text.data(), current_line_text.size());
 
       cursor.byte_n += new_text.size();
+
+      update_cursor_pos();
 
       request_redraw();
     } break;
