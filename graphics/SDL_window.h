@@ -7,7 +7,7 @@ class SDL_window {
 
 public:
     SDL_window(int init_width, int init_height);
-    virtual ~SDL_window();
+
     virtual void draw() = 0;
 
     virtual bool recreateSurfaces();
@@ -25,6 +25,9 @@ public:
 
     int width;
     int height;
+
+protected:
+    virtual ~SDL_window();
 
 private:
     float scalingFactor;
