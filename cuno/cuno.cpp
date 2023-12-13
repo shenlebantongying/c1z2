@@ -41,6 +41,14 @@ struct cuno {
 
   std::vector<cuno_line *> lines{};
 
+  std::string get_line_text(int n) {
+    return {pango_layout_get_text(lines[n]->layout)};
+  }
+
+  void set_line_text(int n, std::string_view s) {
+    pango_layout_set_text(lines[n]->layout, s.data(), s.length());
+  }
+
   bool needRedraw = false;
 
   SDL_Window *window;
@@ -249,7 +257,7 @@ struct cuno {
 
     case SDL_EVENT_MOUSE_BUTTON_DOWN: {
       int possible_cursor_line_n =
-          (vertical_offset + int(ev.button.y)) / line_height_for_now();
+          (-vertical_offset + int(ev.button.y)) / line_height_for_now();
 
       if (possible_cursor_line_n >= lines.size()) {
         break;
@@ -261,8 +269,7 @@ struct cuno {
           lines[cursor.line_n]->layout, pango_units_from_double(ev.button.x),
           pango_units_from_double(0), &cursor.byte_n, nullptr);
       if (!inside) {
-        cursor.byte_n =
-            strlen(pango_layout_get_text(lines[cursor.line_n]->layout));
+        cursor.byte_n = get_line_text(cursor.line_n).size();
       }
 
       update_cursor_pos();
@@ -275,19 +282,92 @@ struct cuno {
       // TODO
     } break;
     case SDL_EVENT_KEY_DOWN: {
-      if (ev.key.keysym.sym == SDLK_BACKSPACE) {
+
+      // Ctrl hold
+      if ((SDL_GetModState() & SDL_KMOD_LCTRL) == SDL_KMOD_LCTRL) {
+        printf("Pressed ->%s\n", SDL_GetKeyName(ev.key.keysym.sym));
+
+        bool cursor_moved = false;
+        switch (ev.key.keysym.sym) {
+        case SDLK_w:
+          if (cursor.line_n >= 1) {
+            cursor.line_n -= 1;
+            cursor_moved = true;
+
+            auto lineSize = get_line_text(cursor.line_n).size();
+            if (cursor.byte_n > lineSize) {
+              cursor.byte_n = lineSize;
+            }
+          }
+          break;
+        case SDLK_s:
+          if (cursor.line_n <= lines.size() - 1 - 1) {
+            cursor.line_n += 1;
+            cursor_moved = true;
+
+            auto lineSize = get_line_text(cursor.line_n).size();
+            if (cursor.byte_n > lineSize) {
+              cursor.byte_n = lineSize;
+            }
+          }
+          break;
+        case SDLK_a:
+          if (cursor.byte_n >= 1) {
+            cursor.byte_n -= 1;
+            cursor_moved = true;
+          }
+          break;
+        case SDLK_d:
+          if (cursor.byte_n <= get_line_text(cursor.line_n).size() - 1) {
+            cursor.byte_n += 1;
+            cursor_moved = true;
+          }
+          break;
+        }
+        if (cursor_moved) {
+          update_cursor_pos();
+          request_redraw();
+          break;
+        }
+      } else if (ev.key.keysym.sym == SDLK_BACKSPACE) {
         std::string t = pango_layout_get_text(lines[cursor.line_n]->layout);
-        auto lpos = find_previous_utf8(t, cursor.byte_n);
 
-        t.erase(lpos, cursor.byte_n - lpos);
+        if (cursor.byte_n != 0) {
 
-        pango_layout_set_text(lines[cursor.line_n]->layout, t.data(),
-                              (int)t.length());
+          auto lpos = find_previous_utf8(t, cursor.byte_n);
 
-        cursor.byte_n = lpos;
+          t.erase(lpos, cursor.byte_n - lpos);
+
+          pango_layout_set_text(lines[cursor.line_n]->layout, t.data(),
+                                (int)t.length());
+
+          cursor.byte_n = lpos;
+        } else if (cursor.byte_n == 0) {
+          if (cursor.line_n >= 1) {
+            cursor.line_n -= 1;
+
+            // merge current line with next line
+            std::string cur = get_line_text(cursor.line_n);
+            std::string next = get_line_text(cursor.line_n + 1);
+
+            cursor.byte_n = cur.length();
+
+            cur.append(next);
+
+            set_line_text(cursor.line_n, cur);
+
+            // TODO: shifting everything here
+            for (int i = cursor.line_n + 1; i < lines.size() - 1; ++i) {
+              std::string s = get_line_text(i + 1);
+              set_line_text(i, s);
+            }
+            lines.pop_back();
+          }
+        } else {
+          std::exit(1);
+        }
 
         update_cursor_pos();
-
         request_redraw();
       } else if (ev.key.keysym.sym == SDLK_RETURN) {
         std::string t = pango_layout_get_text(lines[cursor.line_n]->layout);
@@ -304,6 +384,7 @@ struct cuno {
         cursor.line_n += 1;
         cursor.byte_n = 0;
 
+        update_cursor_pos();
         request_redraw();
       }
     } break;
