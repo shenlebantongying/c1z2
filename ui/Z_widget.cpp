@@ -1,5 +1,6 @@
 #include "Z_widget.h"
 #include <algorithm>
+#include <cstdio>
 
 Z_widget::Z_widget(Z_widget* parent, int rel_x, int rel_y, int w, int h)
 {
@@ -103,5 +104,5 @@ const char* Z_widget::toStr()
 }
 void Z_widget::responseToHitEvent()
 {
-    printf("Got hit %p\n", this);
+    std::printf("Got hit %p\n", this);
 }

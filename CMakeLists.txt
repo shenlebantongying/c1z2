@@ -16,6 +16,7 @@ pkg_check_modules(cairo IMPORTED_TARGET cairo)
 pkg_check_modules(pangocairo IMPORTED_TARGET pangocairo)
 pkg_check_modules(gtest IMPORTED_TARGET gtest)
 pkg_check_modules(gtest_main IMPORTED_TARGET gtest_main)
+pkg_check_modules(fmt IMPORTED_TARGET fmt)
 
 pkg_check_modules(FOR_EVERY_TARGETS IMPORTED_TARGET fmt)
 link_libraries(PkgConfig::FOR_EVERY_TARGETS) # All targets
@@ -59,6 +60,11 @@ target_link_libraries(ui SDL3::SDL3 PkgConfig::cairo)
 add_executable(ui_test_nest_layout ui/tests/nest_layout.cpp)
 target_link_libraries(ui_test_nest_layout PRIVATE ui)
 target_include_directories(ui_test_nest_layout PUBLIC ui)
+
+# CUNO
+
+add_executable(cuno cuno/cuno.cpp cuno/cuno.h)
+target_link_libraries(cuno PRIVATE SDL3::SDL3 PkgConfig::cairo PkgConfig::pangocairo PkgConfig::fmt)
 
 # Doxygen
 find_package(Doxygen

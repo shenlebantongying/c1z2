@@ -7,13 +7,16 @@
 #include <sys/stat.h>
 #include <thread>
 #include <unistd.h>
+#include <csignal>
 
 auto myPipe = "my.fifo";
 
+#ifdef __linux__
+auto racketPath = "/usr/bin/racket";
+#endif
+
 #ifdef __APPLE__
 auto racketPath = "/opt/homebrew/bin/racket";
-#elifdef __linux__
-auto racketPath = "/usr/bin/racket"
 #endif
 
 std::mutex printMutex;
