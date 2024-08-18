@@ -1,6 +1,7 @@
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <cairo.h>
 #include <fmt/format.h>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <pango/pangocairo.h>
@@ -28,6 +29,7 @@ struct cuno_line {
   explicit cuno_line(PangoContext *pangoContext) {
     layout = pango_layout_new(pangoContext);
   }
+
   PangoLayout *layout;
 
   ~cuno_line() { g_object_unref(this->layout); }
@@ -35,11 +37,11 @@ struct cuno_line {
 
 struct cuno {
 
-  cairo_t *cr;
+  cairo_t *cr{nullptr};
 
-  float scalingFactor;
+  float scalingFactor = 0;
 
-  std::vector<cuno_line *> lines{};
+  std::vector<cuno_line *> lines;
 
   std::string get_line_text(int n) {
     return {pango_layout_get_text(lines[n]->layout)};
@@ -51,8 +53,8 @@ struct cuno {
 
   bool needRedraw = false;
 
-  SDL_Window *window;
-  SDL_Renderer *renderer;
+  SDL_Window *window{nullptr};
+  SDL_Renderer *renderer{nullptr};
   SDL_Surface *sdl_surface{nullptr};
   SDL_Texture *sdl_texture{nullptr};
   cairo_surface_t *cr_surface{nullptr};
@@ -64,9 +66,9 @@ struct cuno {
   int width;
   int height;
 
-  int line_height_for_now() { return 20; };
+  static int line_height_for_now() { return 20; };
 
-  const static int scroll_speed = 10;
+  int scroll_speed = 10;
 
   PangoContext *pgContext;
   PangoFontDescription *desc;
@@ -92,10 +94,11 @@ struct cuno {
       EXIT
     }
 
+    SDL_StartTextInput(window);
+
     scalingFactor = SDL_GetWindowDisplayScale(window);
 
-    renderer = SDL_CreateRenderer(
-        window, nullptr, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(window, nullptr);
     if (renderer == nullptr) {
       printf("SDL_CreateRenderer failed %s\n", SDL_GetError());
       EXIT
@@ -158,9 +161,12 @@ struct cuno {
     }
 
     sdl_surface = SDL_CreateSurface(
-        width * scalingFactor, height * scalingFactor,
-        SDL_GetPixelFormatEnumForMasks(32, 0x00ff0000, 0x0000ff00, 0x000000ff,
-                                       0xff000000));
+        static_cast<int>(
+          std::roundl(static_cast<float>(width) * scalingFactor)),
+        static_cast<int>(
+          std::roundl(static_cast<float>(height) * scalingFactor)),
+        SDL_GetPixelFormatForMasks(32, 0x00ff0000, 0x0000ff00, 0x000000ff,
+                                   0xff000000));
     cr_surface = cairo_image_surface_create_for_data(
         static_cast<unsigned char *>(sdl_surface->pixels), CAIRO_FORMAT_ARGB32,
         sdl_surface->w, sdl_surface->h, sdl_surface->pitch);
@@ -212,7 +218,7 @@ struct cuno {
     return 0;
   };
 
-  void updateStates(){};
+  void updateStates() {};
 
   void blit() const {
     cairo_surface_flush(cr_surface);
@@ -234,7 +240,7 @@ struct cuno {
     IME_pos = {int(pango_units_to_double(cursor_rect.x)),
                line_height_for_now() * cursor.line_n, 2, line_height_for_now()};
 
-    SDL_SetTextInputRect(&IME_pos);
+    SDL_SetTextInputArea(window, &IME_pos, 0);
   }
 
   void onEvent(SDL_Event &ev) {
@@ -253,7 +259,8 @@ struct cuno {
         }
       }
       request_redraw();
-    } break;
+    }
+    break;
 
     case SDL_EVENT_MOUSE_BUTTON_DOWN: {
       int possible_cursor_line_n =
@@ -274,33 +281,34 @@ struct cuno {
 
       update_cursor_pos();
       request_redraw();
-    } break;
+    }
+    break;
     case SDL_EVENT_TEXT_EDITING: {
+      printf("text editing event \n");
       Sint32 cursor = ev.edit.start;
       Sint32 selection_len = ev.edit.length;
       std::string composition = ev.edit.text;
       // TODO
-    } break;
+    }
+    break;
     case SDL_EVENT_KEY_DOWN: {
 
       // Ctrl hold
       if ((SDL_GetModState() & SDL_KMOD_LCTRL) == SDL_KMOD_LCTRL) {
-        printf("Pressed ->%s\n", SDL_GetKeyName(ev.key.keysym.sym));
+        printf("Pressed ->%s\n", SDL_GetKeyName(ev.key.key));
 
         bool cursor_moved = false;
-        switch (ev.key.keysym.sym) {
-        case SDLK_w:
+        switch (ev.key.key) {
+        case SDLK_W:
           if (cursor.line_n >= 1) {
             cursor.line_n -= 1;
             cursor_moved = true;
 
-            auto lineSize = get_line_text(cursor.line_n).size();
-            if (cursor.byte_n > lineSize) {
-              cursor.byte_n = lineSize;
-            }
+            int lineSize = get_line_text(cursor.line_n).size();
+            cursor.byte_n = std::min(cursor.byte_n, lineSize);
           }
           break;
-        case SDLK_s:
+        case SDLK_S:
           if (cursor.line_n <= lines.size() - 1 - 1) {
             cursor.line_n += 1;
             cursor_moved = true;
@@ -311,13 +319,13 @@ struct cuno {
             }
           }
           break;
-        case SDLK_a:
+        case SDLK_A:
           if (cursor.byte_n >= 1) {
             cursor.byte_n -= 1;
             cursor_moved = true;
           }
           break;
-        case SDLK_d:
+        case SDLK_D:
           if (cursor.byte_n <= get_line_text(cursor.line_n).size() - 1) {
             cursor.byte_n += 1;
             cursor_moved = true;
@@ -329,7 +337,7 @@ struct cuno {
           request_redraw();
           break;
         }
-      } else if (ev.key.keysym.sym == SDLK_BACKSPACE) {
+      } else if (ev.key.key == SDLK_BACKSPACE) {
         std::string t = pango_layout_get_text(lines[cursor.line_n]->layout);
 
         if (cursor.byte_n != 0) {
@@ -369,7 +377,7 @@ struct cuno {
 
         update_cursor_pos();
         request_redraw();
-      } else if (ev.key.keysym.sym == SDLK_RETURN) {
+      } else if (ev.key.key == SDLK_RETURN) {
         std::string t = pango_layout_get_text(lines[cursor.line_n]->layout);
         std::string car = t.substr(0, cursor.byte_n);
         std::string cdr = t.substr(cursor.byte_n, t.length() - cursor.byte_n);
@@ -387,7 +395,8 @@ struct cuno {
         update_cursor_pos();
         request_redraw();
       }
-    } break;
+    }
+    break;
     case SDL_EVENT_TEXT_INPUT: {
       std::string new_text = ev.text.text; // owned by ev, no need to free
       // fmt::println("Added -> {} at {} {}", new_text,
@@ -403,7 +412,9 @@ struct cuno {
       update_cursor_pos();
 
       request_redraw();
-    } break;
+    }
+    break;
+    default: {}
     }
   }
 

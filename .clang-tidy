@@ -39,6 +39,7 @@ Checks: >
   -modernize-use-using,
   -performance-avoid-endl,
   -readability-else-after-return,
+  -readability-function-cognitive-complexity,
   -readability-identifier-length,
   -readability-implicit-bool-conversion,
   -readability-isolate-declaration,
