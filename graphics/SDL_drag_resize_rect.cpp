@@ -61,7 +61,7 @@ struct demo_key_ev : SDL_window {
     void onEvent(SDL_Event& ev) override
     {
         if (ev.type == SDL_EVENT_KEY_DOWN) {
-            switch (ev.key.keysym.scancode) {
+            switch (ev.key.scancode) {
             case SDL_SCANCODE_W:
                 myRect.y -= 10;
                 break;

@@ -11,15 +11,6 @@
 
 #define EXIT std::exit(1);
 
-inline int find_previous_utf8(std::string &s, int cur_pos) {
-  for (auto i = cur_pos - 1; i >= 0; --i) {
-    if ((s[i] & 0b11'00'00'00) != 0b10'00'00'00) {
-      return i;
-    }
-  }
-  return 0;
-}
-
 struct cursor_pos_t {
   int line_n;
   int byte_n;
@@ -81,7 +72,7 @@ struct cuno {
     width = init_width;
     height = init_height;
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
       printf("SDL_Init failed: %s", SDL_GetError());
       EXIT
     }
@@ -237,8 +228,10 @@ struct cuno {
                                 &cursor_rect, nullptr);
 
     // change IME position
-    IME_pos = {int(pango_units_to_double(cursor_rect.x)),
-               line_height_for_now() * cursor.line_n, 2, line_height_for_now()};
+    IME_pos = SDL_Rect{.x = int(pango_units_to_double(cursor_rect.x)),
+                       .y = line_height_for_now() * cursor.line_n,
+                       .w = 2,
+                       .h = line_height_for_now()};
 
     SDL_SetTextInputArea(window, &IME_pos, 0);
   }
@@ -338,18 +331,22 @@ struct cuno {
           break;
         }
       } else if (ev.key.key == SDLK_BACKSPACE) {
-        std::string t = pango_layout_get_text(lines[cursor.line_n]->layout);
 
         if (cursor.byte_n != 0) {
+          std::string t = pango_layout_get_text(lines[cursor.line_n]->layout);
 
-          auto lpos = find_previous_utf8(t, cursor.byte_n);
+          auto *lastUtf8Ptr = g_utf8_prev_char(&t[cursor.byte_n]);
+          if (lastUtf8Ptr == nullptr) {
+            EXIT
+          }
 
-          t.erase(lpos, cursor.byte_n - lpos);
+          auto diff = &t[cursor.byte_n] - lastUtf8Ptr;
+          cursor.byte_n = cursor.byte_n - diff;
+          t.erase(cursor.byte_n, diff);
 
           pango_layout_set_text(lines[cursor.line_n]->layout, t.data(),
                                 (int)t.length());
 
-          cursor.byte_n = lpos;
         } else if (cursor.byte_n == 0) {
           if (cursor.line_n >= 1) {
             cursor.line_n -= 1;

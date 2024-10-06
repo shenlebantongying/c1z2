@@ -8,6 +8,7 @@
 #include <thread>
 #include <unistd.h>
 #include <csignal>
+#include <mutex>
 
 auto myPipe = "my.fifo";
 

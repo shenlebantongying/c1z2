@@ -14,7 +14,7 @@ Z_app::Z_app(int init_width, int init_height)
     : width(init_width)
     , height(init_height)
 {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         printf("SDL_Init failed: %s", SDL_GetError());
         exit(1);
     }
@@ -26,7 +26,7 @@ Z_app::Z_app(int init_width, int init_height)
     }
 
     renderer = SDL_CreateRenderer(
-        window, nullptr, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+        window, nullptr);
     if (renderer == nullptr) {
         printf("SDL_CreateRenderer failed %s\n", SDL_GetError());
     }
@@ -46,7 +46,7 @@ void Z_app::updateTexture()
     SDL_DestroyTexture(sdl_texture);
     sdl_texture = SDL_CreateTexture(
         renderer,
-        SDL_GetPixelFormatEnumForMasks(32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0),
+        SDL_PIXELFORMAT_XRGB32,
         SDL_TEXTUREACCESS_STREAMING, width, height);
 }
 

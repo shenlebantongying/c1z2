@@ -57,7 +57,7 @@ struct demo_key_ev : public SDL_window {
     {
 
         if (ev.type == SDL_EVENT_KEY_DOWN) {
-            switch (ev.key.keysym.scancode) {
+            switch (ev.key.scancode) {
             case SDL_SCANCODE_W:
                 text = "w pressed\n";
                 newKeyArrival = true;
@@ -79,7 +79,7 @@ struct demo_key_ev : public SDL_window {
                     break;
                 }
 
-                text.append(SDL_GetScancodeName(ev.key.keysym.scancode));
+                text.append(SDL_GetScancodeName(ev.key.scancode));
                 newKeyArrival = true;
                 break;
             }

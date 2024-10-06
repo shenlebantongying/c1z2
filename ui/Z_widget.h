@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Z_ns.h"
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <cairo.h>
 #include <string_view>
 #include <vector>

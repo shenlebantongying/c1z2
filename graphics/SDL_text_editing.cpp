@@ -106,8 +106,8 @@ public:
         }
 
         case SDL_EVENT_KEY_DOWN:
-            fmt::println("KeyDown -> {}", SDL_GetScancodeName(ev.key.keysym.scancode));
-            if (ev.key.keysym.sym == SDLK_BACKSPACE) {
+            fmt::println("KeyDown -> {}", SDL_GetScancodeName(ev.key.scancode));
+            if (ev.key.key == SDLK_BACKSPACE) {
                 auto lpos = find_previous_utf8(text, textBytePos);
                 text.erase(lpos, textBytePos - lpos);
 
@@ -120,7 +120,7 @@ public:
             }
             break;
         case SDL_EVENT_TEXT_INPUT: {
-            char* new_text = ev.text.text; // owned by ev, no need to free
+            const char* new_text = ev.text.text; // owned by ev, no need to free
             fmt::println("Added -> {}", new_text);
 
             text.insert(textBytePos, new_text);

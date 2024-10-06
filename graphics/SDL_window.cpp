@@ -20,10 +20,10 @@ SDL_window::SDL_window(int init_width, int init_height)
 
 bool SDL_window::init()
 {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         printf("SDL_Init failed: %s", SDL_GetError());
-        return false;
-    }
+        exit(1);
+        }
 
     window = SDL_CreateWindow("Drawing board",
         width, height, SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_RESIZABLE);
@@ -33,7 +33,7 @@ bool SDL_window::init()
     }
     scalingFactor = SDL_GetWindowDisplayScale(window);
 
-    renderer = SDL_CreateRenderer(window, nullptr, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(window, nullptr);
     if (renderer == nullptr) {
         printf("SDL_CreateRenderer failed %s\n", SDL_GetError());
         return false;
@@ -58,8 +58,7 @@ bool SDL_window::recreateSurfaces()
         cairo_surface_destroy(cr_surface);
     }
 
-    sdl_surface = SDL_CreateSurface(width * scalingFactor, height * scalingFactor,
-        SDL_GetPixelFormatEnumForMasks(32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000));
+    sdl_surface = SDL_CreateSurface(width * scalingFactor, height * scalingFactor, SDL_PIXELFORMAT_ARGB32);
     cr_surface = cairo_image_surface_create_for_data(static_cast<unsigned char*>(sdl_surface->pixels), CAIRO_FORMAT_ARGB32,
         sdl_surface->w, sdl_surface->h, sdl_surface->pitch);
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "Z_widget.h"
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 struct Z_app {
 

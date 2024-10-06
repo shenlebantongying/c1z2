@@ -1,7 +1,6 @@
 #include "SDL_window.h"
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <cairo.h>
-#include <math.h>
 
 class quarter : public SDL_window {
 
